@@ -1,0 +1,73 @@
+import streamlit as st
+import math
+
+st.set_page_config(page_title="Pro Formwork Solver", layout="wide")
+st.title("🏗️ Pro-Grade ACI Formwork Solver")
+
+# --- SIDEBAR INPUTS ---
+st.sidebar.header("Wall Dimensions")
+L_ft = st.sidebar.number_input("Wall Length (ft)", value=48.0)
+H_ft = st.sidebar.number_input("Wall Height (ft)", value=12.0)
+thick = st.sidebar.selectbox("Concrete Thickness (in)", [8, 10, 12, 18, 24])
+
+st.sidebar.header("Layout Rules")
+edge_offset = 8 # inches
+tie_spacing_h = 16 # inches
+sb_spacing_ft = 4 # Strongbacks every 4 feet
+
+# --- CALCULATIONS ---
+# 1. Horizontal Grid
+l_in = L_ft * 12
+tie_columns = [edge_offset]
+current = edge_offset
+while current + tie_spacing_h <= (l_in - edge_offset):
+    current += tie_spacing_h
+    tie_columns.append(current)
+
+# 2. Vertical Grid (Wale Spacing)
+# ACI Pressure check (Simplified for this UI)
+p_max = 850 # Placeholder for our ACI math
+wale_spacing_v = 16 # inches O.C.
+wale_rows = math.ceil((H_ft * 12) / wale_spacing_v)
+
+# 3. Hardware Split (Long Tail vs Short Tail)
+long_tail_count = 0
+short_tail_count = 0
+sb_count = 0
+
+for col_pos in tie_columns:
+    # If the column lands on a 4ft increment (Strongback location)
+    if col_pos % (sb_spacing_ft * 12) == 0 or col_pos == edge_offset:
+        long_tail_count += wale_rows
+        sb_count += 2 # One per side of wall
+    else:
+        short_tail_count += wale_rows
+
+# --- UI DISPLAY ---
+st.subheader("Field Layout Schedule")
+c1, c2, c3 = st.columns(3)
+c1.metric("Tie Grid (H x V)", f"{tie_spacing_h}\" x {wale_spacing_v}\"")
+c2.metric("First Tie Offset", f"{edge_offset}\" from end")
+c3.metric("Strongback Spacing", f"{sb_spacing_ft} ft O.C.")
+
+st.divider()
+
+st.subheader("📦 Bill of Materials (BOM)")
+b1, b2 = st.columns(2)
+
+with b1:
+    st.write("### Hardware")
+    st.success(f"**Long-Tail Ties:** {long_tail_count * 2} pcs")
+    st.caption(f"Length for: {thick}\" Wall + Wales + Strongbacks")
+    st.success(f"**Short-Tail Ties:** {short_tail_count * 2} pcs")
+    st.caption(f"Length for: {thick}\" Wall + Wales Only")
+    st.info(f"**Tie Wedges/Jahn A-Brackets:** {(long_tail_count + short_tail_count) * 4} pcs")
+
+with b2:
+    st.write("### Lumber")
+    st.write(f"**Wales (2x4):** {math.ceil(L_ft * wale_rows * 4)} Lineal Ft")
+    st.write(f"**Strongbacks (2x6):** {sb_count} pcs @ {H_ft} ft long")
+    st.write(f"**Plywood (4x8):** {math.ceil((L_ft * H_ft * 2) / 32)} Sheets")
+
+
+Sent from my Verizon, Samsung Galaxy smartphone
