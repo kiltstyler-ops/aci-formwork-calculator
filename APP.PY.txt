@@ -68,6 +68,3 @@ with b2:
     st.write(f"**Wales (2x4):** {math.ceil(L_ft * wale_rows * 4)} Lineal Ft")
     st.write(f"**Strongbacks (2x6):** {sb_count} pcs @ {H_ft} ft long")
     st.write(f"**Plywood (4x8):** {math.ceil((L_ft * H_ft * 2) / 32)} Sheets")
-
-
-Sent from my Verizon, Samsung Galaxy smartphone
